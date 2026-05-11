@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Sky from Itzalche — Echo, Drift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#010205;font-family:'Crimson Pro',Georgia,serif;color:#e0d8cc;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+#hud-title{position:fixed;top:22px;left:26px;pointer-events:none;z-index:10}
+#hud-title h1{font-family:'Cinzel',serif;font-size:14px;font-weight:400;letter-spacing:.16em;color:rgba(240,220,180,.7)}
+#hud-title p{font-family:'Crimson Pro',serif;font-style:italic;font-size:11px;color:rgba(200,185,155,.3);margin-top:3px}
+#hud-date{position:fixed;top:22px;right:26px;text-align:right;pointer-events:none;z-index:10}
+#hud-date .era{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;color:rgba(200,185,155,.28);text-transform:uppercase;margin-bottom:3px}
+#hud-date .yr{font-family:'Cinzel',serif;font-size:18px;font-weight:300;letter-spacing:.07em;color:rgba(240,220,180,.75)}
+#hud-date .dy{font-family:'Crimson Pro',serif;font-style:italic;font-size:10px;color:rgba(200,185,155,.32);margin-top:2px}
+#hud-obs{position:fixed;bottom:120px;left:26px;pointer-events:none;z-index:10;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.12em;color:rgba(200,185,155,.28);text-transform:uppercase;line-height:1.8}
+#ctrl{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(2,4,12,.93);border:1px solid rgba(200,185,155,.1);border-radius:8px;padding:10px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:360px;pointer-events:auto;z-index:10}
+#ctrl-scrub{width:100%;-webkit-appearance:none;appearance:none;height:2px;border-radius:1px;background:rgba(200,185,155,.14);outline:none;cursor:pointer}
+#ctrl-scrub::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:#f4a03a;cursor:pointer;box-shadow:0 0 5px rgba(244,160,58,.5)}
+#ctrl-scrub::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:#f4a03a;cursor:pointer;border:none}
+.c-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
+.cb{background:none;border:1px solid rgba(200,185,155,.18);color:rgba(200,185,155,.58);border-radius:4px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.06em;padding:0 9px}
+.cb:hover{border-color:rgba(200,185,155,.5);color:rgba(240,220,180,.9);background:rgba(200,185,155,.05)}
+.cb.on{border-color:#f4a03a;color:#f4a03a}
+#spd{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.07em;color:rgba(200,185,155,.7);background:rgba(2,4,12,.98);border:1px solid rgba(200,185,155,.18);border-radius:4px;padding:0 6px;cursor:pointer;height:26px;outline:none}
+#spd option{background:#06090e}
+.cal-row{display:flex;gap:3px}
+.calb{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;color:rgba(200,185,155,.38);background:none;border:1px solid rgba(200,185,155,.11);border-radius:3px;padding:2px 7px;cursor:pointer;transition:all .12s;text-transform:uppercase}
+.calb.on{color:#f4a03a;border-color:#f4a03a}
+.ep-row{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.ep{font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.07em;color:rgba(200,185,155,.4);background:none;border:1px solid rgba(200,185,155,.11);border-radius:3px;padding:2px 7px;cursor:pointer;transition:all .12s;text-transform:uppercase}
+.ep:hover{color:rgba(240,220,180,.9);border-color:rgba(200,185,155,.45)}
+.obs-row{display:flex;gap:4px;align-items:center}
+.obs-row label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;color:rgba(200,185,155,.35);text-transform:uppercase;white-space:nowrap}
+#obs-time{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.07em;color:rgba(200,185,155,.7);background:rgba(2,4,12,.98);border:1px solid rgba(200,185,155,.18);border-radius:4px;padding:0 6px;cursor:pointer;height:26px;outline:none}
+#obs-time option{background:#06090e}
+#goto-row{display:flex;align-items:center;gap:5px}
+#goto-row label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;color:rgba(200,185,155,.3);text-transform:uppercase;white-space:nowrap}
+#goto-in{font-family:'Cinzel',serif;font-size:9px;color:rgba(240,220,180,.82);background:rgba(2,4,12,.98);border:1px solid rgba(200,185,155,.18);border-radius:4px;padding:0 8px;width:130px;height:24px;outline:none}
+#goto-in:focus{border-color:#f4a03a}
+#goto-in::placeholder{color:rgba(200,185,155,.18);font-size:8.5px}
+#goto-go{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;color:rgba(200,185,155,.5);background:none;border:1px solid rgba(200,185,155,.14);border-radius:4px;padding:0 10px;cursor:pointer;height:24px;transition:all .12s;text-transform:uppercase}
+#goto-go:hover{color:rgba(240,220,180,.9);border-color:rgba(200,185,155,.5)}
+#ctrl-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:2px 0 6px;width:100%}
+#ctrl-hdr span{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;color:rgba(200,185,155,.38);text-transform:uppercase}
+#ctrl-hdr .arr{font-size:9px;color:rgba(200,185,155,.35);transition:transform .2s;display:inline-block}
+#ctrl-body{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;overflow:hidden;max-height:300px;transition:max-height .25s ease,opacity .2s ease;opacity:1}
+#ctrl.collapsed #ctrl-body{max-height:0;opacity:0;pointer-events:none}
+#ctrl.collapsed{padding-bottom:6px}
+#ctrl.collapsed #ctrl-hdr{padding-bottom:0}
+#ctrl.collapsed #ctrl-hdr .arr{transform:rotate(180deg)}
+#tip{position:fixed;pointer-events:none;z-index:200;background:rgba(2,4,12,.95);border:1px solid rgba(200,185,155,.2);border-radius:5px;padding:8px 12px;font-family:'Crimson Pro',serif;font-size:12px;color:#ccc4b0;opacity:0;transition:opacity .1s;white-space:nowrap}
+#tip.show{opacity:1}
+#tip strong{font-family:'Cinzel',serif;font-size:11px;color:#f0e0b8;font-weight:600;display:block;margin-bottom:2px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud-title"><h1>The Sky from Itzalche</h1><p>Echo, Drift &middot; Post-Collapse Night Sky</p></div>
+<div id="hud-date">
+  <div class="era" id="era-l">Post-Collapse</div>
+  <div class="yr" id="yr-l">PC +600</div>
+  <div class="dy" id="dy-l">Day 1</div>
+</div>
+<div id="hud-obs" id="hud-obs">
+  <div>Lat 35°N &middot; Equatorial observer</div>
+  <div>Tilt 23.5° &middot; 26-hr day</div>
+  <div id="obs-label">Observing: Solar noon</div>
+</div>
+<div id="tip"><strong id="tip-n"></strong><span id="tip-i"></span></div>
+<div id="ctrl">
+  <div id="ctrl-hdr">
+    <span>Timeline Controls</span>
+    <span class="arr">&#x25B2;</span>
+  </div>
+  <div id="ctrl-body">
+    <input type="range" id="ctrl-scrub" min="0" max="2191500" value="50" step="1">
+    <div class="ep-row" id="ep-row"></div>
+    <div class="c-row">
+      <button class="cb" id="rew">&#x23EE;</button>
+      <button class="cb" id="play">&#x25B6;</button>
+      <select id="spd">
+        <option value="0">Paused</option>
+        <option value="1">1 day/s &mdash; watch rotation</option>
+        <option value="29">0.1 yr/s</option>
+        <option value="290" selected>1 yr/s</option>
+        <option value="1450">5 yr/s</option>
+        <option value="14500">50 yr/s</option>
+        <option value="72500">250 yr/s</option>
+      </select>
+      <div class="cal-row">
+        <button class="calb on" data-m="PC">PC</button>
+        <button class="calb" data-m="CE">CE</button>
+        <button class="calb" data-m="PE">PE</button>
+      </div>
+    </div>
+    <div class="c-row obs-row">
+      <label>Observe at</label>
+      <select id="obs-time">
+        <option value="noon">Solar noon (analemma)</option>
+        <option value="midnight">Solar midnight</option>
+        <option value="dawn">Dawn (+6h)</option>
+        <option value="dusk">Dusk (-6h)</option>
+      </select>
+      <button class="cb on" id="trail-btn">Trails ON</button>
+      <button class="cb on" id="labels-btn">Labels ON</button>
+    </div>
+    <div id="goto-row">
+      <label>Go to</label>
+      <input id="goto-in" type="text" placeholder="CE 5000  ·  PC 1900  ·  PE 4409" spellcheck="false">
+      <button id="goto-go">Go</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){'use strict';
+
+// ── CALENDAR ────────────────────────────────────────────────────────
+const CE_COLLAPSE=3100,KAEL_CE=6100,START_CE=3700;
+const EARTH_YR=365.25,ITZ_DAYS=290,PE_PER_E=EARTH_YR/ITZ_DAYS;
+const MAX_SD=2191500,KAEL_SD=Math.round((KAEL_CE-START_CE)*EARTH_YR);
+const NOVEL_SD=Math.round((9600-START_CE)*EARTH_YR);
+function sdToCE(s){return START_CE+s/EARTH_YR}
+let calMode='PC';
+function fmtDate(sd){
+  const ce=sdToCE(sd),pc=ce-CE_COLLAPSE,pe=(ce-KAEL_CE)*PE_PER_E+1;
+  const dy=Math.floor(sd%EARTH_YR)+1;
+  if(calMode==='CE') return{era:'Common Era',yr:'CE '+Math.floor(ce).toLocaleString(),dy:'Day '+dy};
+  if(calMode==='PC'){
+    const era=pc<0?'Pre-Collapse':ce<KAEL_CE?'Post-Collapse':'Imperial Era';
+    return{era,yr:'PC '+(pc>=0?'+':'')+Math.floor(pc).toLocaleString(),dy:'Day '+dy};
+  }
+  const yr2=Math.floor(pe),pd=Math.floor(((pe%1+1)*ITZ_DAYS)%ITZ_DAYS)+1;
+  return{era:yr2<0?'Pre-Enlightenment':'Post-Enlightenment',yr:'PE '+yr2.toLocaleString(),dy:'Itz.Day '+pd};
+}
+
+// ── CANVAS ────────────────────────────────────────────────────────────
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let W,H;
+function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
+resize();window.addEventListener('resize',resize);
+
+// ── OBSERVATION PHYSICS ───────────────────────────────────────────────
+const EPSILON = 23.5*Math.PI/180;  // Itzalche axial tilt (Earth-like)
+const PHI     = 35*Math.PI/180;    // observer latitude 35°N
+// Itzalche orbital parameters
+const ITZ_R   = 174;               // orbital radius (compressed units)
+const ITZ_P   = 290;               // orbital period in sim-days
+const ITZ_A0  = 1.5166;            // starting orbital angle
+const ITZ_ECC = 0.017;             // small eccentricity (like Earth ~0.017)
+// This eccentricity creates the east-west asymmetry in the analemma
+
+// Observation time offset (fraction of solar day as radian offset)
+// Solar noon = sun on meridian = sun's RA = LST → H=0
+// At mean solar noon, LST = sun's mean RA
+// We'll compute LST for the chosen observation time
+let obsTimeOffset = 0;  // 0 = solar noon, π = midnight, π/2 = dusk, -π/2 = dawn
+const OBS_OFFSETS = {noon:0, midnight:Math.PI, dawn:-Math.PI/2, dusk:Math.PI/2};
+
+// ── PLANET DATA ────────────────────────────────────────────────────────
+const PLANETS=[
+  // Su'hur is special — computed via Itzalche position
+  {id:'sun',    name:"Su'hur",  isStar:true, col:'#f5c060',mag:-27, desc:"K-type orange star · Source of the Cosmic Wellspring"},
+  {id:'ravi',   name:'Ravi',   r:68,  p:18,    a0:1.3963, col:'#c8b4a0',mag:4.2, inner:true,  desc:'Rocky · Uninhabitable · 18-day orbital period'},
+  {id:'uzara',  name:'Uzara',  r:100, p:73,    a0:3.4428, col:'#d4cc88',mag:3.8, inner:true,  desc:'Rocky · Acid oceans · 73-day orbital period'},
+  {id:'samaq',  name:'Samaq',  r:138, p:196,   a0:3.2057, col:'#c4a87c',mag:3.5, inner:true,  desc:'Rocky · Once-inhabited · Dead desert world'},
+  {id:'taman',  name:'Taman',  r:210, p:290,   a0:1.5166, col:'#d08060',mag:1.2, desc:'Gas Giant · Rusty-red · Habitable moon Tepi'},
+  {id:'agni',   name:'Agni',   r:252, p:392,   a0:4.7444, col:'#98b870',mag:2.8, desc:'Rocky · Habitable · Volcanic tropical atolls'},
+  {id:'kivuli', name:'Kivuli', r:294, p:414,   a0:5.5243, col:'#88aac0',mag:2.5, desc:"Rocky · Habitable · Nuru's world · Asteroid rings"},
+  {id:'ashwin', name:'Ashwin', r:336, p:616,   a0:4.7328, col:'#90c080',mag:2.9, desc:'Rocky · Habitable · Farmworld'},
+  {id:'marut',  name:'Marut',  r:378, p:770,   a0:2.5296, col:'#a8c8e0',mag:3.1, desc:'Rocky · Ice world · Last conquered'},
+  {id:'kusari', name:'Kusari', r:430, p:1277,  a0:3.2277, col:'#9888c0',mag:2.0, desc:'Gas Giant · 27 moons · Anomalous broadcasts from Itze'},
+  {id:'torka',  name:'Torka',  r:492, p:18547, a0:5.1083, col:'#c8b078',mag:3.4, desc:'Gas Giant · Dramatic ring system'},
+  {id:'kandor', name:'Kandor', r:546, p:19386, a0:5.2869, col:'#a89080',mag:5.1, desc:'Rocky · Outer · Meteorite-battered'},
+  {id:'arusha', name:'Arusha', r:600, p:24796, a0:0.5909, col:'#c09878',mag:3.8, desc:'Gas Giant · Outer · Dozens of moons'},
+  {id:'soren',  name:'Soren',  r:652, p:30692, a0:4.9566, col:'#d8ecf8',mag:5.8, desc:'Ice · Outer · Co-orbits with asteroid Ko'},
+];
+PLANETS.forEach(p=>{if(!p.isStar) p.omega=2*Math.PI/p.p});
+
+// ── SKY MATH ──────────────────────────────────────────────────────────
+// Compute Itzalche's position (with slight eccentricity for analemma asymmetry)
+function itzPos(sd){
+  const meanAnomaly = ITZ_A0 + (2*Math.PI/ITZ_P)*sd;
+  // Eccentric anomaly (Newton's method, 2 iterations sufficient)
+  let E = meanAnomaly;
+  E = E - ITZ_ECC*Math.sin(E) + meanAnomaly; E = E/2;
+  E -= (E - ITZ_ECC*Math.sin(E) - meanAnomaly)/(1 - ITZ_ECC*Math.cos(E));
+  const trueAnomaly = 2*Math.atan2(Math.sqrt(1+ITZ_ECC)*Math.sin(E/2), Math.sqrt(1-ITZ_ECC)*Math.cos(E/2));
+  const r = ITZ_R*(1-ITZ_ECC*Math.cos(E));
+  return {x:r*Math.cos(trueAnomaly), y:r*Math.sin(trueAnomaly), angle:trueAnomaly};
+}
+
+// Ecliptic → Equatorial
+function eclToEq(lambda, beta){
+  const sinDec = Math.sin(beta)*Math.cos(EPSILON) + Math.cos(beta)*Math.sin(EPSILON)*Math.sin(lambda);
+  const dec = Math.asin(Math.max(-1,Math.min(1,sinDec)));
+  const ra  = Math.atan2(Math.sin(lambda)*Math.cos(EPSILON) - Math.tan(beta)*Math.sin(EPSILON), Math.cos(lambda));
+  return {ra, dec};
+}
+
+// Alt/Az from RA, Dec, Hour Angle
+function equToHoriz(H, dec){
+  const sinAlt = Math.sin(PHI)*Math.sin(dec) + Math.cos(PHI)*Math.cos(dec)*Math.cos(H);
+  const alt = Math.asin(Math.max(-1,Math.min(1,sinAlt)));
+  const cosAlt = Math.cos(alt);
+  if(cosAlt < 1e-9) return {alt, az:0};
+  const cosAz = (Math.sin(dec) - Math.sin(PHI)*Math.sin(alt))/(Math.cos(PHI)*cosAlt);
+  let az = Math.acos(Math.max(-1,Math.min(1,cosAz)));
+  if(Math.sin(H) > 0) az = 2*Math.PI - az;
+  return {alt, az};
+}
+
+// Full pipeline: planet at sd, observed at LST = meanSunRA + obsTimeOffset
+function getSkyPos(planet, sd){
+  const itz = itzPos(sd);
+
+  // Geocentric direction to body
+  let dx, dy;
+  if(planet.isStar){
+    dx = -itz.x; dy = -itz.y;  // toward star (origin)
+  } else {
+    const pAng = planet.a0 + planet.omega*sd;
+    dx = Math.cos(pAng)*planet.r - itz.x;
+    dy = Math.sin(pAng)*planet.r - itz.y;
+  }
+  const dist = Math.sqrt(dx*dx+dy*dy);
+
+  // Ecliptic longitude/latitude (β=0 for all, coplanar)
+  const lambda = Math.atan2(dy, dx);
+
+  // Equatorial coords
+  const {ra, dec} = eclToEq(lambda, 0);
+
+  // Mean Sun RA (increases linearly, used for "same clock time each day")
+  // Mean solar longitude = Itzalche's mean anomaly + π (direction from Itzalche to Sun)
+  const meanSunLambda = (ITZ_A0 + (2*Math.PI/ITZ_P)*sd) + Math.PI;
+  const meanSunRA = Math.atan2(Math.sin(meanSunLambda)*Math.cos(EPSILON), Math.cos(meanSunLambda));
+
+  // LST for the chosen observation time
+  // At solar noon: LST = apparent sun RA (sun on meridian)
+  // For "same MEAN solar time each day": LST = meanSunRA + obsTimeOffset
+  const lst = meanSunRA + obsTimeOffset;
+
+  // Hour Angle
+  const H = lst - ra;
+
+  const {alt, az} = equToHoriz(H, dec);
+  const visible = alt > -0.05;
+
+  return {alt, az, dist, ra, dec, H, lambda, visible};
+}
+
+// Stereographic projection onto sky dome
+function project(az, alt){
+  const R  = Math.min(W,H)*0.435;
+  // r = 0 at zenith (alt=90°), r = R at horizon (alt=0°)
+  const r  = R*(Math.PI/2 - alt)/(Math.PI/2);
+  return {sx: W/2 + r*Math.sin(az), sy: H/2 - r*Math.cos(az)};
+}
+
+// ── BACKGROUND STARS (fixed in equatorial frame) ──────────────────────
+const BGS=[];
+for(let i=0;i<900;i++){
+  // Random RA and Dec. Dec weighted toward equator for natural look.
+  const ra  = Math.random()*2*Math.PI;
+  const dec = (Math.random()-0.5)*Math.PI*0.9;  // ±81°
+  BGS.push({ra, dec, r:Math.random()*0.9+0.15, a:Math.random()*0.5+0.15, tw:Math.random()*Math.PI*2, warm:Math.random()<0.08});
+}
+
+// ── TRAILS ────────────────────────────────────────────────────────────
+const TRAIL_MAX = 365;  // one full year of daily samples
+let trails={};
+PLANETS.forEach(p=>{ trails[p.id]=[]; });
+let trailsOn=true, labelsOn=true;
+let lastSampleSD = -999;
+
+function sampleTrails(sd){
+  // Only sample at integer sim-days (once per day) for "same time each day"
+  const intDay = Math.floor(sd);
+  if(intDay === lastSampleSD) return;
+  lastSampleSD = intDay;
+  PLANETS.forEach(pl=>{
+    const pos=getSkyPos(pl,intDay);
+    if(!pos.visible) return;
+    const {sx,sy}=project(pos.az,pos.alt);
+    if(sx<10||sx>W-10||sy<10||sy>H-10) return;
+    const tr=trails[pl.id];
+    tr.push({sx,sy,sd:intDay});
+    if(tr.length>TRAIL_MAX) tr.shift();
+  });
+}
+function clearTrails(){PLANETS.forEach(p=>{trails[p.id]=[]});lastSampleSD=-999;}
+
+// ── SIMULATION STATE ──────────────────────────────────────────────────
+let simDay=50,playing=false,speed=290;
+
+// ── DRAW LOOP ─────────────────────────────────────────────────────────
+let hitList=[], lastT=null;
+
+function draw(t){
+  if(lastT!==null&&playing&&speed>0){
+    const dSD=speed*((t-lastT)/1000);
+    simDay+=dSD;
+    if(simDay>MAX_SD){simDay=MAX_SD;setPlay(false)}
+    syncScrub();
+    // Sample trails at integer days
+    const startDay=Math.floor(simDay-dSD), endDay=Math.floor(simDay);
+    for(let d=startDay;d<=endDay;d++) if(d!==lastSampleSD) sampleTrails(d);
+  }
+  lastT=t;
+  hitList=[];
+
+  const R=Math.min(W,H)*0.435;
+
+  // ── SKY BG ──
+  ctx.fillStyle='#010206';ctx.fillRect(0,0,W,H);
+  const domeFill=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,R*1.05);
+  domeFill.addColorStop(0,'rgba(4,10,28,0.98)');
+  domeFill.addColorStop(0.65,'rgba(2,6,18,0.99)');
+  domeFill.addColorStop(1,'rgba(1,2,8,1)');
+  ctx.beginPath();ctx.arc(W/2,H/2,R*1.02,0,Math.PI*2);ctx.fillStyle=domeFill;ctx.fill();
+
+  // ── GRID: altitude rings ──
+  [0,30,60].forEach(aDeg=>{
+    const a=aDeg*Math.PI/180;
+    const {sx,sy}=project(0,a);
+    const rr=Math.sqrt((sx-W/2)**2+(sy-H/2)**2);
+    ctx.beginPath();ctx.arc(W/2,H/2,rr,0,Math.PI*2);
+    ctx.strokeStyle=aDeg===0?'rgba(200,185,155,0.2)':'rgba(200,185,155,0.055)';
+    ctx.lineWidth=aDeg===0?1.1:0.5;ctx.stroke();
+    if(aDeg>0){
+      ctx.font=`300 8px 'Cinzel',serif`;ctx.fillStyle='rgba(200,185,155,0.22)';
+      ctx.textAlign='left';ctx.textBaseline='middle';
+      ctx.fillText(aDeg+'°',W/2+rr+6,H/2);
+    }
+  });
+
+  // ── CARDINAL LINES ──
+  [{az:0,l:'N'},{az:Math.PI/2,l:'E'},{az:Math.PI,l:'S'},{az:3*Math.PI/2,l:'W'}].forEach(c=>{
+    const p0=project(c.az,0),p1=project(c.az,Math.PI*0.01);
+    ctx.beginPath();ctx.moveTo(W/2,H/2);ctx.lineTo(p0.sx,p0.sy);
+    ctx.strokeStyle='rgba(200,185,155,0.05)';ctx.lineWidth=0.5;ctx.stroke();
+    ctx.font=`400 9px 'Cinzel',serif`;ctx.fillStyle='rgba(200,185,155,0.28)';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const lp=project(c.az,-0.07);ctx.fillText(c.l,lp.sx,lp.sy);
+  });
+
+  // ── BACKGROUND STARS ──
+  // Stars are fixed in the inertial (equatorial) frame.
+  // We draw them at a CONSTANT LST — the sidereal frame at the reference epoch.
+  // This keeps them as a static backdrop when sampling at the same mean solar time
+  // each day. The subtle sidereal drift (~1 extra rotation per year) is real but
+  // is not what we want to visualise here — the planet trails against a fixed sky.
+  const STAR_LST = 0; // fixed sidereal reference — stars don't rotate
+
+  for(const s of BGS){
+    const H2 = STAR_LST - s.ra;
+    const {alt,az}=equToHoriz(H2,s.dec);
+    if(alt<-0.05) continue;
+    const {sx,sy}=project(az,alt);
+    if(sx<2||sx>W-2||sy<2||sy>H-2) continue;
+    const a=s.a*(0.55+0.45*Math.sin(t*.0005+s.tw));
+    ctx.beginPath();ctx.arc(sx,sy,s.r,0,Math.PI*2);
+    ctx.fillStyle=s.warm?`rgba(255,215,150,${a})`:`rgba(195,208,255,${a})`;
+    ctx.fill();
+  }
+
+  // ── TRAILS ──
+  if(trailsOn){
+    PLANETS.forEach(pl=>{
+      const tr=trails[pl.id];
+      if(tr.length<2) return;
+      for(let i=1;i<tr.length;i++){
+        const age=i/tr.length;  // 0=oldest,1=newest
+        const alpha=Math.floor(age*70+5).toString(16).padStart(2,'0');
+        ctx.beginPath();
+        ctx.moveTo(tr[i-1].sx,tr[i-1].sy);
+        ctx.lineTo(tr[i].sx,tr[i].sy);
+        ctx.strokeStyle=pl.col+alpha;
+        ctx.lineWidth=pl.isStar?1.5:0.9;
+        ctx.stroke();
+      }
+    });
+  }
+
+  // ── PLANETS ──
+  PLANETS.forEach(pl=>{
+    const pos=getSkyPos(pl,simDay);
+    if(!pos.visible) return;
+    const {sx,sy}=project(pos.az,pos.alt);
+    if(sx<4||sx>W-4||sy<4||sy>H-4) return;
+
+    const r=pl.isStar ? 11 : Math.max(1.3,5.5-pl.mag);
+
+    if(pl.isStar){
+      // Su'hur: sun disc with corona
+      const g=ctx.createRadialGradient(sx,sy,0,sx,sy,r*7);
+      g.addColorStop(0,'rgba(255,248,200,1)');
+      g.addColorStop(0.1,'rgba(245,195,80,0.9)');
+      g.addColorStop(0.35,'rgba(220,140,30,0.35)');
+      g.addColorStop(0.7,'rgba(200,100,10,0.08)');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath();ctx.arc(sx,sy,r*7,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+      ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fillStyle='#fffbe0';ctx.fill();
+    } else {
+      const g=ctx.createRadialGradient(sx,sy,0,sx,sy,r*4.5);
+      g.addColorStop(0,pl.col+'88');
+      g.addColorStop(0.35,pl.col+'30');
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath();ctx.arc(sx,sy,r*4.5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+      ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fillStyle=pl.col;ctx.fill();
+    }
+
+    if(labelsOn&&!pl.isStar){
+      ctx.font=`300 8px 'Cinzel',serif`;ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillStyle='rgba(200,185,155,0.38)';
+      ctx.fillText(pl.name.toUpperCase(),sx,sy-r-3);
+    }
+
+    hitList.push({sx,sy,r:Math.max(r+8,16),pl,pos});
+  });
+
+  // ── DOME EDGE ──
+  ctx.beginPath();ctx.arc(W/2,H/2,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(200,185,155,0.15)';ctx.lineWidth=1.2;ctx.stroke();
+
+  // Zenith
+  ctx.beginPath();ctx.arc(W/2,H/2,2.5,0,Math.PI*2);
+  ctx.fillStyle='rgba(200,185,155,0.2)';ctx.fill();
+
+  // ── INNER PLANETS IN GLARE ──
+  const glared=PLANETS.filter(pl=>{
+    if(!pl.inner) return false;
+    const pos=getSkyPos(pl,simDay);
+    // check elongation from sun
+    const itz=itzPos(simDay);
+    const sunAng=Math.atan2(-itz.y,-itz.x);
+    let elong=pos.lambda-sunAng;
+    while(elong>Math.PI)elong-=2*Math.PI;while(elong<-Math.PI)elong+=2*Math.PI;
+    return Math.abs(elong)*180/Math.PI<18;
+  });
+  if(glared.length){
+    ctx.font=`italic 300 9px 'Crimson Pro',serif`;ctx.fillStyle='rgba(200,185,155,0.18)';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const p=project(Math.PI,0.08);
+    ctx.fillText(glared.map(p=>p.name).join(', ')+' — lost in Su\u2019hur\u2019s glare',p.sx,p.sy);
+  }
+
+  // ── ANALEMMA LABEL ──
+  if(trailsOn){
+    const tr=trails['sun'];
+    if(tr.length>10){
+      ctx.font=`300 8px 'Cinzel',serif`;ctx.fillStyle='rgba(245,195,80,0.35)';
+      ctx.textAlign='left';ctx.textBaseline='middle';
+      ctx.fillText("SU\u2019HUR ANALEMMA",tr[tr.length-1].sx+14,tr[tr.length-1].sy);
+    }
+  }
+
+  updateDateDisplay();
+  requestAnimationFrame(draw);
+}
+
+// ── UI ─────────────────────────────────────────────────────────────────
+function updateDateDisplay(){
+  const f=fmtDate(simDay);
+  document.getElementById('era-l').textContent=f.era;
+  document.getElementById('yr-l').textContent=f.yr;
+  document.getElementById('dy-l').textContent=f.dy;
+  // obs label
+  const names={noon:'Solar noon',midnight:'Solar midnight',dawn:'Dawn (+6h)',dusk:'Dusk (-6h)'};
+  const k=document.getElementById('obs-time').value;
+  document.getElementById('obs-label').textContent='Observing: '+names[k];
+}
+function syncScrub(){document.getElementById('ctrl-scrub').value=String(Math.round(simDay))}
+
+const playBtn=document.getElementById('play');
+function setPlay(v){playing=v;playBtn.innerHTML=v?'&#x23F8;':'&#x25B6;';playBtn.classList.toggle('on',v)}
+setPlay(false);
+
+document.getElementById('rew').addEventListener('click',()=>{simDay=50;setPlay(false);clearTrails();syncScrub()});
+playBtn.addEventListener('click',()=>setPlay(!playing));
+document.getElementById('spd').addEventListener('change',function(){
+  speed=parseFloat(this.value);
+  if(speed>0&&!playing)setPlay(true);
+  if(speed===0)setPlay(false);
+});
+document.getElementById('ctrl-scrub').addEventListener('input',function(){
+  simDay=parseFloat(this.value);clearTrails();setPlay(false);syncScrub();
+});
+document.getElementById('ctrl-scrub').addEventListener('mousedown',()=>setPlay(false));
+
+// Calendar
+document.querySelectorAll('.calb').forEach(b=>{
+  b.addEventListener('click',()=>{calMode=b.dataset.m;document.querySelectorAll('.calb').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateDateDisplay()});
+});
+
+// Observation time
+document.getElementById('obs-time').addEventListener('change',function(){
+  obsTimeOffset=OBS_OFFSETS[this.value]||0;
+  clearTrails();
+});
+
+// Trail toggle
+const trailBtn=document.getElementById('trail-btn');
+trailBtn.addEventListener('click',()=>{
+  trailsOn=!trailsOn;
+  trailBtn.textContent=trailsOn?'Trails ON':'Trails OFF';
+  trailBtn.classList.toggle('on',trailsOn);
+  if(!trailsOn)clearTrails();
+});
+
+// Labels toggle
+const labBtn=document.getElementById('labels-btn');
+labBtn.addEventListener('click',()=>{
+  labelsOn=!labelsOn;
+  labBtn.textContent=labelsOn?'Labels ON':'Labels OFF';
+  labBtn.classList.toggle('on',labelsOn);
+});
+
+// Epochs
+const EPOCHS=[
+  {l:'3700 CE',d:50},
+  {l:'PC 0',d:Math.max(0,Math.round((CE_COLLAPSE-START_CE)*EARTH_YR))},
+  {l:'PE 1',d:KAEL_SD},
+  {l:'Gathering',d:NOVEL_SD},
+];
+const epRow=document.getElementById('ep-row');
+EPOCHS.forEach(ep=>{
+  const b=document.createElement('button');b.className='ep';b.textContent=ep.l;
+  b.addEventListener('click',()=>{simDay=Math.max(0,ep.d);setPlay(false);clearTrails();syncScrub()});
+  epRow.appendChild(b);
+});
+
+// Go-to
+function parseGoto(s){
+  s=s.trim().toUpperCase().replace(/,/g,'');
+  const n=parseFloat(s.replace(/^(CE|PC|PE)\s*/,''));
+  if(isNaN(n))return null;
+  let ce;
+  if(s.startsWith('PE'))ce=KAEL_CE+(n-1)/PE_PER_E;
+  else if(s.startsWith('PC'))ce=CE_COLLAPSE+n;
+  else ce=n;
+  return Math.max(0,Math.min(MAX_SD,Math.round((ce-START_CE)*EARTH_YR)));
+}
+document.getElementById('goto-go').addEventListener('click',doGoto);
+document.getElementById('goto-in').addEventListener('keydown',e=>{if(e.key==='Enter')doGoto()});
+function doGoto(){
+  const inp=document.getElementById('goto-in');
+  const sd=parseGoto(inp.value);
+  if(sd===null){inp.style.borderColor='rgba(220,80,60,.7)';setTimeout(()=>inp.style.borderColor='',1000);return}
+  simDay=sd;setPlay(false);clearTrails();syncScrub();inp.value='';
+}
+
+// Tooltip
+const tip=document.getElementById('tip');
+cv.addEventListener('mousemove',e=>{
+  const rect=cv.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  let hit=null;
+  for(const h of hitList)if(Math.hypot(mx-h.sx,my-h.sy)<h.r){hit=h;break}
+  if(hit){
+    document.getElementById('tip-n').textContent=hit.pl.name;
+    const alt=(hit.pos.alt*180/Math.PI).toFixed(1),az=(hit.pos.az*180/Math.PI).toFixed(1);
+    document.getElementById('tip-i').textContent=hit.pl.desc+' · Alt '+alt+'° Az '+az+'°';
+    tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';
+    tip.classList.add('show');
+  } else tip.classList.remove('show');
+});
+cv.addEventListener('mouseleave',()=>tip.classList.remove('show'));
+
+// ── CTRL PANEL COLLAPSE ──────────────────────────────────────────────
+document.getElementById('ctrl-hdr').addEventListener('click', () => {
+  document.getElementById('ctrl').classList.toggle('collapsed');
+});
+
+// ── INIT ─────────────────────────────────────────────────────────────
+requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
