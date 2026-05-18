@@ -3,129 +3,238 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
 <title>The Sky from Itzalche — Echo, Drift</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 <style>
+html{background:#010205}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:#010205;font-family:'Crimson Pro',Georgia,serif;color:#e0d8cc;user-select:none}
 canvas{position:fixed;inset:0;width:100%;height:100%}
-#hud-title{position:fixed;top:22px;left:26px;pointer-events:none;z-index:10}
-#hud-title h1{font-family:'Cinzel',serif;font-size:14px;font-weight:400;letter-spacing:.16em;color:rgba(240,220,180,.7)}
-#hud-title p{font-family:'Crimson Pro',serif;font-style:italic;font-size:11px;color:rgba(200,185,155,.3);margin-top:3px}
-#hud-date{position:fixed;top:22px;right:26px;text-align:right;pointer-events:none;z-index:10}
-#hud-date .era{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;color:rgba(200,185,155,.28);text-transform:uppercase;margin-bottom:3px}
-#hud-date .yr{font-family:'Cinzel',serif;font-size:18px;font-weight:300;letter-spacing:.07em;color:rgba(240,220,180,.75)}
-#hud-date .dy{font-family:'Crimson Pro',serif;font-style:italic;font-size:10px;color:rgba(200,185,155,.32);margin-top:2px}
-#hud-obs{position:fixed;bottom:120px;left:26px;pointer-events:none;z-index:10;font-family:'Cinzel',serif;font-size:8px;letter-spacing:.12em;color:rgba(200,185,155,.28);text-transform:uppercase;line-height:1.8}
-#ctrl{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(2,4,12,.93);border:1px solid rgba(200,185,155,.1);border-radius:8px;padding:10px 16px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:360px;pointer-events:auto;z-index:10}
-#ctrl-scrub{width:100%;-webkit-appearance:none;appearance:none;height:2px;border-radius:1px;background:rgba(200,185,155,.14);outline:none;cursor:pointer}
-#ctrl-scrub::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:#f4a03a;cursor:pointer;box-shadow:0 0 5px rgba(244,160,58,.5)}
-#ctrl-scrub::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:#f4a03a;cursor:pointer;border:none}
-.c-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
-.cb{background:none;border:1px solid rgba(200,185,155,.18);color:rgba(200,185,155,.58);border-radius:4px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.06em;padding:0 9px}
-.cb:hover{border-color:rgba(200,185,155,.5);color:rgba(240,220,180,.9);background:rgba(200,185,155,.05)}
-.cb.on{border-color:#f4a03a;color:#f4a03a}
-#spd{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.07em;color:rgba(200,185,155,.7);background:rgba(2,4,12,.98);border:1px solid rgba(200,185,155,.18);border-radius:4px;padding:0 6px;cursor:pointer;height:26px;outline:none}
-#spd option{background:#06090e}
-.cal-row{display:flex;gap:3px}
-.calb{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;color:rgba(200,185,155,.38);background:none;border:1px solid rgba(200,185,155,.11);border-radius:3px;padding:2px 7px;cursor:pointer;transition:all .12s;text-transform:uppercase}
-.calb.on{color:#f4a03a;border-color:#f4a03a}
-.ep-row{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
-.ep{font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.07em;color:rgba(200,185,155,.4);background:none;border:1px solid rgba(200,185,155,.11);border-radius:3px;padding:2px 7px;cursor:pointer;transition:all .12s;text-transform:uppercase}
-.ep:hover{color:rgba(240,220,180,.9);border-color:rgba(200,185,155,.45)}
-.obs-row{display:flex;gap:4px;align-items:center}
-.obs-row label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;color:rgba(200,185,155,.35);text-transform:uppercase;white-space:nowrap}
-#obs-time{font-family:'Cinzel',serif;font-size:9px;letter-spacing:.07em;color:rgba(200,185,155,.7);background:rgba(2,4,12,.98);border:1px solid rgba(200,185,155,.18);border-radius:4px;padding:0 6px;cursor:pointer;height:26px;outline:none}
-#obs-time option{background:#06090e}
-#goto-row{display:flex;align-items:center;gap:5px}
-#goto-row label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.1em;color:rgba(200,185,155,.3);text-transform:uppercase;white-space:nowrap}
-#goto-in{font-family:'Cinzel',serif;font-size:9px;color:rgba(240,220,180,.82);background:rgba(2,4,12,.98);border:1px solid rgba(200,185,155,.18);border-radius:4px;padding:0 8px;width:130px;height:24px;outline:none}
+
+/* ── MINIMAL HUD — date top-right, title top-left ── */
+#hud-title{position:fixed;top:20px;left:24px;pointer-events:none;z-index:10}
+#hud-title h1{font-family:'Cinzel',serif;font-size:13px;font-weight:400;letter-spacing:.18em;color:rgba(240,220,180,.6)}
+#hud-title p{font-family:'Crimson Pro',serif;font-style:italic;font-size:10px;color:rgba(200,185,155,.25);margin-top:2px}
+
+#hud-date{position:fixed;top:20px;right:24px;text-align:right;pointer-events:none;z-index:10}
+.era{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.2em;color:rgba(200,185,155,.25);text-transform:uppercase;margin-bottom:3px}
+.yr{font-family:'Cinzel',serif;font-size:20px;font-weight:300;letter-spacing:.07em;color:rgba(240,220,180,.72)}
+.dy{font-family:'Crimson Pro',serif;font-style:italic;font-size:10px;color:rgba(200,185,155,.28);margin-top:2px}
+
+#hud-obs{position:fixed;bottom:58px;left:24px;pointer-events:none;z-index:10;
+  font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.14em;
+  color:rgba(200,185,155,.2);text-transform:uppercase;line-height:2}
+
+/* ── PERSISTENT BOTTOM BAR ── */
+#bar{
+  position:fixed;bottom:0;left:0;right:0;height:50px;
+  background:rgba(1,2,6,.97);
+  border-top:1px solid rgba(200,185,155,.1);
+  display:flex;align-items:center;gap:10px;padding:0 14px;
+  z-index:100;pointer-events:auto;
+}
+.bar-btn{
+  background:none;border:1px solid rgba(200,185,155,.2);
+  color:rgba(200,185,155,.62);border-radius:4px;
+  height:28px;padding:0 10px;cursor:pointer;
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:.04em;
+  display:flex;align-items:center;gap:5px;
+  transition:all .12s;white-space:nowrap;flex-shrink:0;
+}
+.bar-btn:hover{border-color:rgba(200,185,155,.55);color:rgba(240,220,180,.92)}
+.bar-btn.on{border-color:#f4a03a;color:#f4a03a;background:rgba(244,160,58,.05)}
+#bar-rew{padding:0 8px;font-size:14px;border:none;color:rgba(200,185,155,.45)}
+#bar-rew:hover{color:rgba(240,220,180,.85);border:none;background:none}
+#bar-scrub{
+  flex:1;-webkit-appearance:none;appearance:none;
+  height:2px;border-radius:1px;
+  background:rgba(200,185,155,.14);outline:none;cursor:pointer;min-width:0;
+}
+#bar-scrub::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#f4a03a;cursor:pointer;box-shadow:0 0 6px rgba(244,160,58,.5)}
+#bar-scrub::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#f4a03a;cursor:pointer;border:none}
+#bar-spd{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.07em;
+  color:rgba(200,185,155,.65);
+  background:rgba(2,4,10,.98);border:1px solid rgba(200,185,155,.18);
+  border-radius:4px;padding:0 8px;cursor:pointer;height:28px;outline:none;
+  flex-shrink:0;max-width:200px;
+}
+#bar-spd option{background:#03050c}
+#bar-spd:focus{border-color:rgba(200,185,155,.4)}
+
+/* ── FLOATING OPTIONS PANEL ── */
+#opts{
+  position:fixed;
+  /* positioned by JS near the Options button */
+  background:rgba(2,4,12,.97);
+  border:1px solid rgba(200,185,155,.14);
+  border-radius:8px;
+  padding:14px 16px 16px;
+  display:flex;flex-direction:column;gap:10px;
+  min-width:300px;max-width:380px;
+  z-index:200;
+  pointer-events:auto;
+  backdrop-filter:blur(14px);
+  box-shadow:0 8px 40px rgba(0,0,0,.7);
+  /* hidden by default */
+  opacity:0;visibility:hidden;
+  transform:translateY(6px);
+  transition:opacity .18s ease,transform .18s ease,visibility 0s linear .18s;
+}
+#opts.open{
+  opacity:1;visibility:visible;transform:translateY(0);
+  transition:opacity .18s ease,transform .18s ease,visibility 0s linear 0s;
+}
+.opt-section{display:flex;flex-direction:column;gap:6px}
+.opt-label{
+  font-family:'Cinzel',serif;font-size:7.5px;letter-spacing:.18em;
+  color:rgba(200,185,155,.3);text-transform:uppercase;
+}
+.opt-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.opt-divider{width:100%;height:1px;background:rgba(200,185,155,.07)}
+.calb,.tog,.ep{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.09em;
+  color:rgba(200,185,155,.45);background:none;
+  border:1px solid rgba(200,185,155,.14);border-radius:3px;
+  padding:3px 9px;cursor:pointer;
+  transition:all .12s;text-transform:uppercase;
+}
+.calb:hover,.tog:hover,.ep:hover{color:rgba(240,220,180,.9);border-color:rgba(200,185,155,.5)}
+.calb.on,.tog.on{color:#f4a03a;border-color:rgba(244,160,58,.5);background:rgba(244,160,58,.05)}
+.ep-row{display:flex;gap:4px;flex-wrap:wrap}
+#obs-sel{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.06em;
+  color:rgba(200,185,155,.7);background:rgba(2,4,12,.98);
+  border:1px solid rgba(200,185,155,.18);border-radius:4px;
+  padding:0 7px;cursor:pointer;height:24px;outline:none;
+}
+#obs-sel option{background:#03050c}
+#goto-in{
+  font-family:'Cinzel',serif;font-size:9px;
+  color:rgba(240,220,180,.82);background:rgba(2,4,12,.98);
+  border:1px solid rgba(200,185,155,.18);border-radius:4px;
+  padding:0 8px;flex:1;height:24px;outline:none;min-width:0;
+}
 #goto-in:focus{border-color:#f4a03a}
 #goto-in::placeholder{color:rgba(200,185,155,.18);font-size:8.5px}
-#goto-go{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;color:rgba(200,185,155,.5);background:none;border:1px solid rgba(200,185,155,.14);border-radius:4px;padding:0 10px;cursor:pointer;height:24px;transition:all .12s;text-transform:uppercase}
+#goto-go{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:.08em;
+  color:rgba(200,185,155,.5);background:none;
+  border:1px solid rgba(200,185,155,.15);border-radius:4px;
+  padding:0 10px;cursor:pointer;height:24px;
+  transition:all .12s;text-transform:uppercase;white-space:nowrap;
+}
 #goto-go:hover{color:rgba(240,220,180,.9);border-color:rgba(200,185,155,.5)}
-#ctrl-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:2px 0 6px;width:100%}
-#ctrl-hdr span{font-family:'Cinzel',serif;font-size:8px;letter-spacing:.18em;color:rgba(200,185,155,.38);text-transform:uppercase}
-#ctrl-hdr .arr{font-size:9px;color:rgba(200,185,155,.35);transition:transform .2s;display:inline-block}
-#ctrl-body{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;overflow:hidden;max-height:300px;transition:max-height .25s ease,opacity .2s ease;opacity:1}
-#ctrl.collapsed #ctrl-body{max-height:0;opacity:0;pointer-events:none}
-#ctrl.collapsed{padding-bottom:6px}
-#ctrl.collapsed #ctrl-hdr{padding-bottom:0}
-#ctrl.collapsed #ctrl-hdr .arr{transform:rotate(180deg)}
-#tip{position:fixed;pointer-events:none;z-index:200;background:rgba(2,4,12,.95);border:1px solid rgba(200,185,155,.2);border-radius:5px;padding:8px 12px;font-family:'Crimson Pro',serif;font-size:12px;color:#ccc4b0;opacity:0;transition:opacity .1s;white-space:nowrap}
+
+/* ── TOOLTIP ── */
+#tip{
+  position:fixed;pointer-events:none;z-index:300;
+  background:rgba(2,4,12,.96);border:1px solid rgba(200,185,155,.2);
+  border-radius:5px;padding:8px 12px;
+  font-family:'Crimson Pro',serif;font-size:12px;color:#ccc4b0;
+  opacity:0;transition:opacity .1s;white-space:nowrap;
+}
 #tip.show{opacity:1}
 #tip strong{font-family:'Cinzel',serif;font-size:11px;color:#f0e0b8;font-weight:600;display:block;margin-bottom:2px}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud-title"><h1>The Sky from Itzalche</h1><p>Echo, Drift &middot; Post-Collapse Night Sky</p></div>
+
+<!-- Minimal HUD — stays out of the way -->
+<div id="hud-title">
+  <h1>The Sky from Itzalche</h1>
+  <p>Echo, Drift &middot; Equatorial Observer &middot; Lat 35&deg;N</p>
+</div>
 <div id="hud-date">
   <div class="era" id="era-l">Post-Collapse</div>
-  <div class="yr" id="yr-l">PC +600</div>
-  <div class="dy" id="dy-l">Day 1</div>
+  <div class="yr"  id="yr-l">PC +600</div>
+  <div class="dy"  id="dy-l">Day 1</div>
 </div>
-<div id="hud-obs" id="hud-obs">
-  <div>Lat 35°N &middot; Equatorial observer</div>
-  <div>Tilt 23.5° &middot; 26-hr day</div>
-  <div id="obs-label">Observing: Solar noon</div>
+<div id="hud-obs">
+  <div>Tilt 23.5&deg; &middot; 26-hr day</div>
+  <div id="obs-label">Solar noon</div>
 </div>
+
+<!-- Tooltip -->
 <div id="tip"><strong id="tip-n"></strong><span id="tip-i"></span></div>
-<div id="ctrl">
-  <div id="ctrl-hdr">
-    <span>Timeline Controls</span>
-    <span class="arr">&#x25B2;</span>
-  </div>
-  <div id="ctrl-body">
-    <input type="range" id="ctrl-scrub" min="0" max="2191500" value="50" step="1">
-    <div class="ep-row" id="ep-row"></div>
-    <div class="c-row">
-      <button class="cb" id="rew">&#x23EE;</button>
-      <button class="cb" id="play">&#x25B6;</button>
-      <select id="spd">
-        <option value="0">Paused</option>
-        <option value="1">1 day/s &mdash; watch rotation</option>
-        <option value="29">0.1 yr/s</option>
-        <option value="290" selected>1 yr/s</option>
-        <option value="1450">5 yr/s</option>
-        <option value="14500">50 yr/s</option>
-        <option value="72500">250 yr/s</option>
+
+<!-- Floating options — appears above bar, anchored to Options button -->
+<div id="opts">
+  <div class="opt-section">
+    <div class="opt-label">Speed</div>
+    <div class="opt-row">
+      <select id="bar-spd">
+        <option value="0.000311">Real-time &mdash; 1 Itz.day = 26 hrs</option>
+        <option value="1" selected>1 day / sec</option>
+        <option value="29">0.1 yr / sec</option>
+        <option value="290">1 yr / sec</option>
+        <option value="1450">5 yr / sec</option>
+        <option value="14500">50 yr / sec</option>
+        <option value="72500">250 yr / sec</option>
       </select>
-      <div class="cal-row">
-        <button class="calb on" data-m="PC">PC</button>
-        <button class="calb" data-m="CE">CE</button>
-        <button class="calb" data-m="PE">PE</button>
-      </div>
     </div>
-    <div class="c-row obs-row">
-      <label>Observe at</label>
-      <select id="obs-time">
+  </div>
+  <div class="opt-divider"></div>
+  <div class="opt-section">
+    <div class="opt-label">Jump to epoch</div>
+    <div class="opt-row ep-row" id="ep-row"></div>
+  </div>
+  <div class="opt-divider"></div>
+  <div class="opt-section">
+    <div class="opt-label">Go to year</div>
+    <div class="opt-row">
+      <input id="goto-in" type="text" placeholder="CE 7100  &middot;  PC 3000  &middot;  PE 38" spellcheck="false">
+      <button id="goto-go">Go</button>
+    </div>
+  </div>
+  <div class="opt-divider"></div>
+  <div class="opt-section">
+    <div class="opt-label">Calendar</div>
+    <div class="opt-row">
+      <button class="calb on" data-m="PC">PC</button>
+      <button class="calb" data-m="CE">CE</button>
+      <button class="calb" data-m="PE">PE</button>
+    </div>
+  </div>
+  <div class="opt-section">
+    <div class="opt-label">Observe at</div>
+    <div class="opt-row">
+      <select id="obs-sel">
         <option value="noon">Solar noon (analemma)</option>
         <option value="midnight">Solar midnight</option>
         <option value="dawn">Dawn (+6h)</option>
         <option value="dusk">Dusk (-6h)</option>
       </select>
-      <button class="cb on" id="trail-btn">Trails ON</button>
-      <button class="cb on" id="labels-btn">Labels ON</button>
-    </div>
-    <div id="goto-row">
-      <label>Go to</label>
-      <input id="goto-in" type="text" placeholder="CE 5000  ·  PC 1900  ·  PE 4409" spellcheck="false">
-      <button id="goto-go">Go</button>
     </div>
   </div>
+  <div class="opt-section">
+    <div class="opt-label">Display</div>
+    <div class="opt-row">
+      <button class="tog on" id="trail-btn">Trails</button>
+      <button class="tog on" id="labels-btn">Labels</button>
+    </div>
+  </div>
+</div>
+
+<!-- Persistent bottom bar — always visible -->
+<div id="bar">
+  <button class="bar-btn" id="bar-rew" title="Rewind to start">&#x23EE;</button>
+  <button class="bar-btn" id="bar-play">&#x25B6;</button>
+  <input type="range" id="bar-scrub" min="0" max="2556750" value="0" step="1">
+  <button class="bar-btn" id="bar-opts">Options &#x25B4;</button>
 </div>
 
 <script>
 (function(){'use strict';
 
-// ── CALENDAR ────────────────────────────────────────────────────────
-const CE_COLLAPSE=3100,KAEL_CE=6100,START_CE=3700;
+// ── CALENDAR ─────────────────────────────────────────────────────────
+const CE_COLLAPSE=4100,KAEL_CE=7100,START_CE=3700;
 const EARTH_YR=365.25,ITZ_DAYS=290,PE_PER_E=EARTH_YR/ITZ_DAYS;
-const MAX_SD=2191500,KAEL_SD=Math.round((KAEL_CE-START_CE)*EARTH_YR);
-const NOVEL_SD=Math.round((9600-START_CE)*EARTH_YR);
+const MAX_SD=2556750,KAEL_SD=1241850,NOVEL_SD=2520225;
 function sdToCE(s){return START_CE+s/EARTH_YR}
 let calMode='PC';
 function fmtDate(sd){
@@ -140,168 +249,127 @@ function fmtDate(sd){
   return{era:yr2<0?'Pre-Enlightenment':'Post-Enlightenment',yr:'PE '+yr2.toLocaleString(),dy:'Itz.Day '+pd};
 }
 
-// ── CANVAS ────────────────────────────────────────────────────────────
+// ── CANVAS ───────────────────────────────────────────────────────────
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 let W,H;
 function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
 resize();window.addEventListener('resize',resize);
 
-// ── OBSERVATION PHYSICS ───────────────────────────────────────────────
-const EPSILON = 23.5*Math.PI/180;  // Itzalche axial tilt (Earth-like)
-const PHI     = 35*Math.PI/180;    // observer latitude 35°N
-// Itzalche orbital parameters
-const ITZ_R   = 174;               // orbital radius (compressed units)
-const ITZ_P   = 290;               // orbital period in sim-days
-const ITZ_A0  = 1.5166;            // starting orbital angle
-const ITZ_ECC = 0.017;             // small eccentricity (like Earth ~0.017)
-// This eccentricity creates the east-west asymmetry in the analemma
+// ── OBSERVATION PHYSICS ──────────────────────────────────────────────
+const EPSILON=23.5*Math.PI/180;
+const PHI=35*Math.PI/180;
+const ITZ_R=174,ITZ_P=290,ITZ_A0=1.5166,ITZ_ECC=0.017;
+let obsTimeOffset=0;
+const OBS_OFFSETS={noon:0,midnight:Math.PI,dawn:-Math.PI/2,dusk:Math.PI/2};
 
-// Observation time offset (fraction of solar day as radian offset)
-// Solar noon = sun on meridian = sun's RA = LST → H=0
-// At mean solar noon, LST = sun's mean RA
-// We'll compute LST for the chosen observation time
-let obsTimeOffset = 0;  // 0 = solar noon, π = midnight, π/2 = dusk, -π/2 = dawn
-const OBS_OFFSETS = {noon:0, midnight:Math.PI, dawn:-Math.PI/2, dusk:Math.PI/2};
-
-// ── PLANET DATA ────────────────────────────────────────────────────────
+// ── PLANET DATA ──────────────────────────────────────────────────────
 const PLANETS=[
-  // Su'hur is special — computed via Itzalche position
-  {id:'sun',    name:"Su'hur",  isStar:true, col:'#f5c060',mag:-27, desc:"K-type orange star · Source of the Cosmic Wellspring"},
-  {id:'ravi',   name:'Ravi',   r:68,  p:18,    a0:1.3963, col:'#c8b4a0',mag:4.2, inner:true,  desc:'Rocky · Uninhabitable · 18-day orbital period'},
-  {id:'uzara',  name:'Uzara',  r:100, p:73,    a0:3.4428, col:'#d4cc88',mag:3.8, inner:true,  desc:'Rocky · Acid oceans · 73-day orbital period'},
-  {id:'samaq',  name:'Samaq',  r:138, p:196,   a0:3.2057, col:'#c4a87c',mag:3.5, inner:true,  desc:'Rocky · Once-inhabited · Dead desert world'},
-  {id:'taman',  name:'Taman',  r:210, p:290,   a0:1.5166, col:'#d08060',mag:1.2, desc:'Gas Giant · Rusty-red · Habitable moon Tepi'},
-  {id:'agni',   name:'Agni',   r:252, p:392,   a0:4.7444, col:'#98b870',mag:2.8, desc:'Rocky · Habitable · Volcanic tropical atolls'},
-  {id:'kivuli', name:'Kivuli', r:294, p:414,   a0:5.5243, col:'#88aac0',mag:2.5, desc:"Rocky · Habitable · Nuru's world · Asteroid rings"},
-  {id:'ashwin', name:'Ashwin', r:336, p:616,   a0:4.7328, col:'#90c080',mag:2.9, desc:'Rocky · Habitable · Farmworld'},
-  {id:'marut',  name:'Marut',  r:378, p:770,   a0:2.5296, col:'#a8c8e0',mag:3.1, desc:'Rocky · Ice world · Last conquered'},
-  {id:'kusari', name:'Kusari', r:430, p:1277,  a0:3.2277, col:'#9888c0',mag:2.0, desc:'Gas Giant · 27 moons · Anomalous broadcasts from Itze'},
-  {id:'torka',  name:'Torka',  r:492, p:18547, a0:5.1083, col:'#c8b078',mag:3.4, desc:'Gas Giant · Dramatic ring system'},
-  {id:'kandor', name:'Kandor', r:546, p:19386, a0:5.2869, col:'#a89080',mag:5.1, desc:'Rocky · Outer · Meteorite-battered'},
-  {id:'arusha', name:'Arusha', r:600, p:24796, a0:0.5909, col:'#c09878',mag:3.8, desc:'Gas Giant · Outer · Dozens of moons'},
-  {id:'soren',  name:'Soren',  r:652, p:30692, a0:4.9566, col:'#d8ecf8',mag:5.8, desc:'Ice · Outer · Co-orbits with asteroid Ko'},
+  {id:'sun',    name:"Su'hur",  isStar:true,col:'#f5c060',mag:-27,desc:"K-type orange star \u00b7 Source of the Cosmic Wellspring"},
+  {id:'ravi',   name:'Ravi',   r:68,  p:18,   a0:1.3963,col:'#c8b4a0',mag:4.2,inner:true,desc:'Rocky \u00b7 Uninhabitable \u00b7 18-day orbital period'},
+  {id:'uzara',  name:'Uzara',  r:100, p:73,   a0:3.4428,col:'#d4cc88',mag:3.8,inner:true,desc:'Rocky \u00b7 Acid oceans \u00b7 73-day orbital period'},
+  {id:'samaq',  name:'Samaq',  r:138, p:196,  a0:3.2057,col:'#c4a87c',mag:3.5,inner:true,desc:'Rocky \u00b7 Once-inhabited \u00b7 Dead desert world'},
+  {id:'taman',  name:'Taman',  r:210, p:290,  a0:1.5166,col:'#d08060',mag:1.2,desc:'Gas Giant \u00b7 Rusty-red \u00b7 Habitable moon Tepi'},
+  {id:'agni',   name:'Agni',   r:252, p:392,  a0:4.7444,col:'#98b870',mag:2.8,desc:'Rocky \u00b7 Habitable \u00b7 Volcanic tropical atolls'},
+  {id:'kivuli', name:'Kivuli', r:294, p:414,  a0:5.5243,col:'#88aac0',mag:2.5,desc:"Rocky \u00b7 Habitable \u00b7 Nuru's world \u00b7 Asteroid rings"},
+  {id:'ashwin', name:'Ashwin', r:336, p:616,  a0:4.7328,col:'#90c080',mag:2.9,desc:'Rocky \u00b7 Habitable \u00b7 Farmworld'},
+  {id:'marut',  name:'Marut',  r:378, p:770,  a0:2.5296,col:'#a8c8e0',mag:3.1,desc:'Rocky \u00b7 Ice world \u00b7 Last conquered'},
+  {id:'kusari', name:'Kusari', r:430, p:1277, a0:3.2277,col:'#9888c0',mag:2.0,desc:'Gas Giant \u00b7 27 moons \u00b7 Anomalous broadcasts from Itze'},
+  {id:'torka',  name:'Torka',  r:492, p:18547,a0:5.1083,col:'#c8b078',mag:3.4,desc:'Gas Giant \u00b7 Dramatic ring system'},
+  {id:'kandor', name:'Kandor', r:546, p:19386,a0:5.2869,col:'#a89080',mag:5.1,desc:'Rocky \u00b7 Outer \u00b7 Meteorite-battered'},
+  {id:'arusha', name:'Arusha', r:600, p:24796,a0:0.5909,col:'#c09878',mag:3.8,desc:'Gas Giant \u00b7 Outer \u00b7 Dozens of moons'},
+  {id:'soren',  name:'Soren',  r:652, p:30692,a0:4.9566,col:'#d8ecf8',mag:5.8,desc:'Ice \u00b7 Outer \u00b7 Co-orbits with asteroid Ko'},
 ];
-PLANETS.forEach(p=>{if(!p.isStar) p.omega=2*Math.PI/p.p});
+PLANETS.forEach(p=>{if(!p.isStar)p.omega=2*Math.PI/p.p});
 
-// ── SKY MATH ──────────────────────────────────────────────────────────
-// Compute Itzalche's position (with slight eccentricity for analemma asymmetry)
+// ── SKY MATH ─────────────────────────────────────────────────────────
 function itzPos(sd){
-  const meanAnomaly = ITZ_A0 + (2*Math.PI/ITZ_P)*sd;
-  // Eccentric anomaly (Newton's method, 2 iterations sufficient)
-  let E = meanAnomaly;
-  E = E - ITZ_ECC*Math.sin(E) + meanAnomaly; E = E/2;
-  E -= (E - ITZ_ECC*Math.sin(E) - meanAnomaly)/(1 - ITZ_ECC*Math.cos(E));
-  const trueAnomaly = 2*Math.atan2(Math.sqrt(1+ITZ_ECC)*Math.sin(E/2), Math.sqrt(1-ITZ_ECC)*Math.cos(E/2));
-  const r = ITZ_R*(1-ITZ_ECC*Math.cos(E));
-  return {x:r*Math.cos(trueAnomaly), y:r*Math.sin(trueAnomaly), angle:trueAnomaly};
+  const M=ITZ_A0+(2*Math.PI/ITZ_P)*sd;
+  let E=M;
+  E=E-ITZ_ECC*Math.sin(E)+M;E=E/2;
+  E-=(E-ITZ_ECC*Math.sin(E)-M)/(1-ITZ_ECC*Math.cos(E));
+  const v=2*Math.atan2(Math.sqrt(1+ITZ_ECC)*Math.sin(E/2),Math.sqrt(1-ITZ_ECC)*Math.cos(E/2));
+  const r=ITZ_R*(1-ITZ_ECC*Math.cos(E));
+  return{x:r*Math.cos(v),y:r*Math.sin(v)};
+}
+function eclToEq(lambda){
+  const dec=Math.asin(Math.max(-1,Math.min(1,Math.sin(EPSILON)*Math.sin(lambda))));
+  const ra=Math.atan2(Math.sin(lambda)*Math.cos(EPSILON),Math.cos(lambda));
+  return{ra,dec};
+}
+function equToHoriz(H,dec){
+  const sinAlt=Math.sin(PHI)*Math.sin(dec)+Math.cos(PHI)*Math.cos(dec)*Math.cos(H);
+  const alt=Math.asin(Math.max(-1,Math.min(1,sinAlt)));
+  const cosAlt=Math.cos(alt);
+  if(cosAlt<1e-9)return{alt,az:0};
+  const cosAz=(Math.sin(dec)-Math.sin(PHI)*Math.sin(alt))/(Math.cos(PHI)*cosAlt);
+  let az=Math.acos(Math.max(-1,Math.min(1,cosAz)));
+  if(Math.sin(H)>0)az=2*Math.PI-az;
+  return{alt,az};
+}
+function getSkyPos(planet,sd){
+  const itz=itzPos(sd);
+  let dx,dy;
+  if(planet.isStar){dx=-itz.x;dy=-itz.y;}
+  else{const a=planet.a0+planet.omega*sd;dx=Math.cos(a)*planet.r-itz.x;dy=Math.sin(a)*planet.r-itz.y;}
+  const lambda=Math.atan2(dy,dx);
+  const{ra,dec}=eclToEq(lambda);
+  const msl=(ITZ_A0+(2*Math.PI/ITZ_P)*sd)+Math.PI;
+  const msRA=Math.atan2(Math.sin(msl)*Math.cos(EPSILON),Math.cos(msl));
+  const lst=msRA+obsTimeOffset;
+  const H=lst-ra;
+  const{alt,az}=equToHoriz(H,dec);
+  return{alt,az,lambda,visible:alt>-0.05};
+}
+function project(az,alt){
+  const R=Math.min(W,H)*0.435,r=R*(Math.PI/2-alt)/(Math.PI/2);
+  return{sx:W/2+r*Math.sin(az),sy:H/2-r*Math.cos(az)};
 }
 
-// Ecliptic → Equatorial
-function eclToEq(lambda, beta){
-  const sinDec = Math.sin(beta)*Math.cos(EPSILON) + Math.cos(beta)*Math.sin(EPSILON)*Math.sin(lambda);
-  const dec = Math.asin(Math.max(-1,Math.min(1,sinDec)));
-  const ra  = Math.atan2(Math.sin(lambda)*Math.cos(EPSILON) - Math.tan(beta)*Math.sin(EPSILON), Math.cos(lambda));
-  return {ra, dec};
-}
-
-// Alt/Az from RA, Dec, Hour Angle
-function equToHoriz(H, dec){
-  const sinAlt = Math.sin(PHI)*Math.sin(dec) + Math.cos(PHI)*Math.cos(dec)*Math.cos(H);
-  const alt = Math.asin(Math.max(-1,Math.min(1,sinAlt)));
-  const cosAlt = Math.cos(alt);
-  if(cosAlt < 1e-9) return {alt, az:0};
-  const cosAz = (Math.sin(dec) - Math.sin(PHI)*Math.sin(alt))/(Math.cos(PHI)*cosAlt);
-  let az = Math.acos(Math.max(-1,Math.min(1,cosAz)));
-  if(Math.sin(H) > 0) az = 2*Math.PI - az;
-  return {alt, az};
-}
-
-// Full pipeline: planet at sd, observed at LST = meanSunRA + obsTimeOffset
-function getSkyPos(planet, sd){
-  const itz = itzPos(sd);
-
-  // Geocentric direction to body
-  let dx, dy;
-  if(planet.isStar){
-    dx = -itz.x; dy = -itz.y;  // toward star (origin)
-  } else {
-    const pAng = planet.a0 + planet.omega*sd;
-    dx = Math.cos(pAng)*planet.r - itz.x;
-    dy = Math.sin(pAng)*planet.r - itz.y;
-  }
-  const dist = Math.sqrt(dx*dx+dy*dy);
-
-  // Ecliptic longitude/latitude (β=0 for all, coplanar)
-  const lambda = Math.atan2(dy, dx);
-
-  // Equatorial coords
-  const {ra, dec} = eclToEq(lambda, 0);
-
-  // Mean Sun RA (increases linearly, used for "same clock time each day")
-  // Mean solar longitude = Itzalche's mean anomaly + π (direction from Itzalche to Sun)
-  const meanSunLambda = (ITZ_A0 + (2*Math.PI/ITZ_P)*sd) + Math.PI;
-  const meanSunRA = Math.atan2(Math.sin(meanSunLambda)*Math.cos(EPSILON), Math.cos(meanSunLambda));
-
-  // LST for the chosen observation time
-  // At solar noon: LST = apparent sun RA (sun on meridian)
-  // For "same MEAN solar time each day": LST = meanSunRA + obsTimeOffset
-  const lst = meanSunRA + obsTimeOffset;
-
-  // Hour Angle
-  const H = lst - ra;
-
-  const {alt, az} = equToHoriz(H, dec);
-  const visible = alt > -0.05;
-
-  return {alt, az, dist, ra, dec, H, lambda, visible};
-}
-
-// Stereographic projection onto sky dome
-function project(az, alt){
-  const R  = Math.min(W,H)*0.435;
-  // r = 0 at zenith (alt=90°), r = R at horizon (alt=0°)
-  const r  = R*(Math.PI/2 - alt)/(Math.PI/2);
-  return {sx: W/2 + r*Math.sin(az), sy: H/2 - r*Math.cos(az)};
-}
-
-// ── BACKGROUND STARS (fixed in equatorial frame) ──────────────────────
+// ── BACKGROUND STARS ─────────────────────────────────────────────────
 const BGS=[];
 for(let i=0;i<900;i++){
-  // Random RA and Dec. Dec weighted toward equator for natural look.
-  const ra  = Math.random()*2*Math.PI;
-  const dec = (Math.random()-0.5)*Math.PI*0.9;  // ±81°
-  BGS.push({ra, dec, r:Math.random()*0.9+0.15, a:Math.random()*0.5+0.15, tw:Math.random()*Math.PI*2, warm:Math.random()<0.08});
+  BGS.push({ra:Math.random()*2*Math.PI,dec:(Math.random()-.5)*Math.PI*.9,
+    r:Math.random()*.9+.15,a:Math.random()*.5+.15,tw:Math.random()*Math.PI*2,warm:Math.random()<.08});
 }
 
-// ── TRAILS ────────────────────────────────────────────────────────────
-const TRAIL_MAX = 365;  // one full year of daily samples
-let trails={};
-PLANETS.forEach(p=>{ trails[p.id]=[]; });
-let trailsOn=true, labelsOn=true;
-let lastSampleSD = -999;
+// ── TRAILS ───────────────────────────────────────────────────────────
+const TRAIL_MAX=365;
+let trails={};PLANETS.forEach(p=>{trails[p.id]=[]});
+let trailsOn=true,labelsOn=true,lastSampleSD=-999;
 
 function sampleTrails(sd){
-  // Only sample at integer sim-days (once per day) for "same time each day"
-  const intDay = Math.floor(sd);
-  if(intDay === lastSampleSD) return;
-  lastSampleSD = intDay;
+  const intDay=Math.floor(sd);
+  if(intDay===lastSampleSD)return;
+  lastSampleSD=intDay;
   PLANETS.forEach(pl=>{
     const pos=getSkyPos(pl,intDay);
-    if(!pos.visible) return;
-    const {sx,sy}=project(pos.az,pos.alt);
-    if(sx<10||sx>W-10||sy<10||sy>H-10) return;
     const tr=trails[pl.id];
-    tr.push({sx,sy,sd:intDay});
-    if(tr.length>TRAIL_MAX) tr.shift();
+    if(!pos.visible){
+      if(tr.length>0&&tr[tr.length-1].visible!==false){
+        tr.push({visible:false,sd:intDay});
+        if(tr.length>TRAIL_MAX)tr.shift();
+      }
+      return;
+    }
+    const{sx,sy}=project(pos.az,pos.alt);
+    if(sx<10||sx>W-10||sy<10||sy>H-10)return;
+    tr.push({sx,sy,sd:intDay,visible:true});
+    if(tr.length>TRAIL_MAX)tr.shift();
   });
 }
 function clearTrails(){PLANETS.forEach(p=>{trails[p.id]=[]});lastSampleSD=-999;}
 
-// ── SIMULATION STATE ──────────────────────────────────────────────────
-let simDay=50,playing=false,speed=290;
+// ── SIMULATION STATE ─────────────────────────────────────────────────
+// Real-time: 1 Itzalche day = 26 real hours = 26*3600 seconds
+// speed is in sim-days per real-second
+// Real-time speed = 1 / (26*3600) days/sec = 0.0000107 — imperceptibly slow for the timeline
+// So "real-time" means 1 sim-day takes 26 real seconds (1 day = 26 hrs but accelerated to 26s)
+// This lets you actually watch the rotation: 1 Itzalche day plays in 26 real seconds
+const REALTIME_SPEED = 1/26; // 1 sim-day per 26 real seconds → 26-hr day feels like 26s
+let simDay=0,playing=false,speed=1;
 
-// ── DRAW LOOP ─────────────────────────────────────────────────────────
-let hitList=[], lastT=null;
+// ── DRAW LOOP ────────────────────────────────────────────────────────
+let hitList=[],lastT=null;
 
 function draw(t){
   if(lastT!==null&&playing&&speed>0){
@@ -309,235 +377,245 @@ function draw(t){
     simDay+=dSD;
     if(simDay>MAX_SD){simDay=MAX_SD;setPlay(false)}
     syncScrub();
-    // Sample trails at integer days
-    const startDay=Math.floor(simDay-dSD), endDay=Math.floor(simDay);
-    for(let d=startDay;d<=endDay;d++) if(d!==lastSampleSD) sampleTrails(d);
+    const s0=Math.floor(simDay-dSD),s1=Math.floor(simDay);
+    for(let d=s0;d<=s1;d++)if(d!==lastSampleSD)sampleTrails(d);
   }
-  lastT=t;
-  hitList=[];
+  lastT=t;hitList=[];
 
   const R=Math.min(W,H)*0.435;
 
-  // ── SKY BG ──
+  // Sky BG
   ctx.fillStyle='#010206';ctx.fillRect(0,0,W,H);
-  const domeFill=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,R*1.05);
-  domeFill.addColorStop(0,'rgba(4,10,28,0.98)');
-  domeFill.addColorStop(0.65,'rgba(2,6,18,0.99)');
-  domeFill.addColorStop(1,'rgba(1,2,8,1)');
-  ctx.beginPath();ctx.arc(W/2,H/2,R*1.02,0,Math.PI*2);ctx.fillStyle=domeFill;ctx.fill();
+  const dome=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,R*1.05);
+  dome.addColorStop(0,'rgba(4,10,28,.98)');dome.addColorStop(.65,'rgba(2,6,18,.99)');dome.addColorStop(1,'rgba(1,2,8,1)');
+  ctx.beginPath();ctx.arc(W/2,H/2,R*1.02,0,Math.PI*2);ctx.fillStyle=dome;ctx.fill();
 
-  // ── GRID: altitude rings ──
+  // Altitude rings
   [0,30,60].forEach(aDeg=>{
-    const a=aDeg*Math.PI/180;
-    const {sx,sy}=project(0,a);
+    const a=aDeg*Math.PI/180,{sx,sy}=project(0,a);
     const rr=Math.sqrt((sx-W/2)**2+(sy-H/2)**2);
     ctx.beginPath();ctx.arc(W/2,H/2,rr,0,Math.PI*2);
-    ctx.strokeStyle=aDeg===0?'rgba(200,185,155,0.2)':'rgba(200,185,155,0.055)';
-    ctx.lineWidth=aDeg===0?1.1:0.5;ctx.stroke();
-    if(aDeg>0){
-      ctx.font=`300 8px 'Cinzel',serif`;ctx.fillStyle='rgba(200,185,155,0.22)';
-      ctx.textAlign='left';ctx.textBaseline='middle';
-      ctx.fillText(aDeg+'°',W/2+rr+6,H/2);
-    }
+    ctx.strokeStyle=aDeg===0?'rgba(200,185,155,.2)':'rgba(200,185,155,.055)';
+    ctx.lineWidth=aDeg===0?1.1:.5;ctx.stroke();
+    if(aDeg>0){ctx.font=`300 8px 'Cinzel',serif`;ctx.fillStyle='rgba(200,185,155,.22)';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(aDeg+'°',W/2+rr+6,H/2)}
   });
 
-  // ── CARDINAL LINES ──
+  // Cardinal lines
   [{az:0,l:'N'},{az:Math.PI/2,l:'E'},{az:Math.PI,l:'S'},{az:3*Math.PI/2,l:'W'}].forEach(c=>{
-    const p0=project(c.az,0),p1=project(c.az,Math.PI*0.01);
+    const p0=project(c.az,0);
     ctx.beginPath();ctx.moveTo(W/2,H/2);ctx.lineTo(p0.sx,p0.sy);
-    ctx.strokeStyle='rgba(200,185,155,0.05)';ctx.lineWidth=0.5;ctx.stroke();
-    ctx.font=`400 9px 'Cinzel',serif`;ctx.fillStyle='rgba(200,185,155,0.28)';
+    ctx.strokeStyle='rgba(200,185,155,.05)';ctx.lineWidth=.5;ctx.stroke();
+    ctx.font=`400 9px 'Cinzel',serif`;ctx.fillStyle='rgba(200,185,155,.28)';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    const lp=project(c.az,-0.07);ctx.fillText(c.l,lp.sx,lp.sy);
+    const lp=project(c.az,-.07);ctx.fillText(c.l,lp.sx,lp.sy);
   });
 
-  // ── BACKGROUND STARS ──
-  // Stars are fixed in the inertial (equatorial) frame.
-  // We draw them at a CONSTANT LST — the sidereal frame at the reference epoch.
-  // This keeps them as a static backdrop when sampling at the same mean solar time
-  // each day. The subtle sidereal drift (~1 extra rotation per year) is real but
-  // is not what we want to visualise here — the planet trails against a fixed sky.
-  const STAR_LST = 0; // fixed sidereal reference — stars don't rotate
-
+  // Background stars — fixed sidereal frame
   for(const s of BGS){
-    const H2 = STAR_LST - s.ra;
-    const {alt,az}=equToHoriz(H2,s.dec);
-    if(alt<-0.05) continue;
-    const {sx,sy}=project(az,alt);
-    if(sx<2||sx>W-2||sy<2||sy>H-2) continue;
-    const a=s.a*(0.55+0.45*Math.sin(t*.0005+s.tw));
+    const H2=0-s.ra,{alt,az}=equToHoriz(H2,s.dec);
+    if(alt<-.05)continue;
+    const{sx,sy}=project(az,alt);
+    if(sx<2||sx>W-2||sy<2||sy>H-2)continue;
+    const a=s.a*(.55+.45*Math.sin(t*.0005+s.tw));
     ctx.beginPath();ctx.arc(sx,sy,s.r,0,Math.PI*2);
     ctx.fillStyle=s.warm?`rgba(255,215,150,${a})`:`rgba(195,208,255,${a})`;
     ctx.fill();
   }
 
-  // ── TRAILS ──
+  // Trails
   if(trailsOn){
     PLANETS.forEach(pl=>{
-      const tr=trails[pl.id];
-      if(tr.length<2) return;
+      const tr=trails[pl.id];if(tr.length<2)return;
       for(let i=1;i<tr.length;i++){
-        const age=i/tr.length;  // 0=oldest,1=newest
+        const prev=tr[i-1],curr=tr[i];
+        if(!prev.visible||!curr.visible)continue;
+        if(curr.sd-prev.sd>2)continue;
+        const age=i/tr.length;
         const alpha=Math.floor(age*70+5).toString(16).padStart(2,'0');
-        ctx.beginPath();
-        ctx.moveTo(tr[i-1].sx,tr[i-1].sy);
-        ctx.lineTo(tr[i].sx,tr[i].sy);
-        ctx.strokeStyle=pl.col+alpha;
-        ctx.lineWidth=pl.isStar?1.5:0.9;
-        ctx.stroke();
+        ctx.beginPath();ctx.moveTo(prev.sx,prev.sy);ctx.lineTo(curr.sx,curr.sy);
+        ctx.strokeStyle=pl.col+alpha;ctx.lineWidth=pl.isStar?1.5:.9;ctx.stroke();
       }
     });
   }
 
-  // ── PLANETS ──
+  // Planets
   PLANETS.forEach(pl=>{
-    const pos=getSkyPos(pl,simDay);
-    if(!pos.visible) return;
-    const {sx,sy}=project(pos.az,pos.alt);
-    if(sx<4||sx>W-4||sy<4||sy>H-4) return;
-
-    const r=pl.isStar ? 11 : Math.max(1.3,5.5-pl.mag);
-
+    const pos=getSkyPos(pl,simDay);if(!pos.visible)return;
+    const{sx,sy}=project(pos.az,pos.alt);
+    if(sx<4||sx>W-4||sy<4||sy>H-4)return;
+    const r=pl.isStar?11:Math.max(1.3,5.5-pl.mag);
     if(pl.isStar){
-      // Su'hur: sun disc with corona
       const g=ctx.createRadialGradient(sx,sy,0,sx,sy,r*7);
-      g.addColorStop(0,'rgba(255,248,200,1)');
-      g.addColorStop(0.1,'rgba(245,195,80,0.9)');
-      g.addColorStop(0.35,'rgba(220,140,30,0.35)');
-      g.addColorStop(0.7,'rgba(200,100,10,0.08)');
-      g.addColorStop(1,'rgba(0,0,0,0)');
+      g.addColorStop(0,'rgba(255,248,200,1)');g.addColorStop(.1,'rgba(245,195,80,.9)');
+      g.addColorStop(.35,'rgba(220,140,30,.35)');g.addColorStop(.7,'rgba(200,100,10,.08)');g.addColorStop(1,'rgba(0,0,0,0)');
       ctx.beginPath();ctx.arc(sx,sy,r*7,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
       ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fillStyle='#fffbe0';ctx.fill();
     } else {
       const g=ctx.createRadialGradient(sx,sy,0,sx,sy,r*4.5);
-      g.addColorStop(0,pl.col+'88');
-      g.addColorStop(0.35,pl.col+'30');
-      g.addColorStop(1,'rgba(0,0,0,0)');
+      g.addColorStop(0,pl.col+'88');g.addColorStop(.35,pl.col+'30');g.addColorStop(1,'rgba(0,0,0,0)');
       ctx.beginPath();ctx.arc(sx,sy,r*4.5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
       ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fillStyle=pl.col;ctx.fill();
     }
-
     if(labelsOn&&!pl.isStar){
       ctx.font=`300 8px 'Cinzel',serif`;ctx.textAlign='center';ctx.textBaseline='bottom';
-      ctx.fillStyle='rgba(200,185,155,0.38)';
+      ctx.fillStyle='rgba(200,185,155,.38)';
       ctx.fillText(pl.name.toUpperCase(),sx,sy-r-3);
     }
-
     hitList.push({sx,sy,r:Math.max(r+8,16),pl,pos});
   });
 
-  // ── DOME EDGE ──
+  // Dome edge + zenith
   ctx.beginPath();ctx.arc(W/2,H/2,R,0,Math.PI*2);
-  ctx.strokeStyle='rgba(200,185,155,0.15)';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.strokeStyle='rgba(200,185,155,.15)';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.beginPath();ctx.arc(W/2,H/2,2.5,0,Math.PI*2);ctx.fillStyle='rgba(200,185,155,.2)';ctx.fill();
 
-  // Zenith
-  ctx.beginPath();ctx.arc(W/2,H/2,2.5,0,Math.PI*2);
-  ctx.fillStyle='rgba(200,185,155,0.2)';ctx.fill();
-
-  // ── INNER PLANETS IN GLARE ──
+  // Inner planets in glare
   const glared=PLANETS.filter(pl=>{
-    if(!pl.inner) return false;
+    if(!pl.inner)return false;
     const pos=getSkyPos(pl,simDay);
-    // check elongation from sun
     const itz=itzPos(simDay);
-    const sunAng=Math.atan2(-itz.y,-itz.x);
-    let elong=pos.lambda-sunAng;
+    let elong=pos.lambda-Math.atan2(-itz.y,-itz.x);
     while(elong>Math.PI)elong-=2*Math.PI;while(elong<-Math.PI)elong+=2*Math.PI;
     return Math.abs(elong)*180/Math.PI<18;
   });
   if(glared.length){
-    ctx.font=`italic 300 9px 'Crimson Pro',serif`;ctx.fillStyle='rgba(200,185,155,0.18)';
+    const p=project(Math.PI,.08);
+    ctx.font=`italic 300 9px 'Crimson Pro',serif`;ctx.fillStyle='rgba(200,185,155,.18)';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    const p=project(Math.PI,0.08);
-    ctx.fillText(glared.map(p=>p.name).join(', ')+' — lost in Su\u2019hur\u2019s glare',p.sx,p.sy);
+    ctx.fillText(glared.map(p=>p.name).join(', ')+' \u2014 lost in Su\u2019hur\u2019s glare',p.sx,p.sy);
   }
 
-  // ── ANALEMMA LABEL ──
+  // Analemma label
   if(trailsOn){
     const tr=trails['sun'];
     if(tr.length>10){
-      ctx.font=`300 8px 'Cinzel',serif`;ctx.fillStyle='rgba(245,195,80,0.35)';
-      ctx.textAlign='left';ctx.textBaseline='middle';
-      ctx.fillText("SU\u2019HUR ANALEMMA",tr[tr.length-1].sx+14,tr[tr.length-1].sy);
+      const last=tr.filter(p=>p.visible).slice(-1)[0];
+      if(last){ctx.font=`300 8px 'Cinzel',serif`;ctx.fillStyle='rgba(245,195,80,.35)';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText("SU\u2019HUR ANALEMMA",last.sx+14,last.sy)}
     }
   }
 
-  updateDateDisplay();
+  updateDate();
   requestAnimationFrame(draw);
 }
 
-// ── UI ─────────────────────────────────────────────────────────────────
-function updateDateDisplay(){
+// ── UI ────────────────────────────────────────────────────────────────
+function updateDate(){
   const f=fmtDate(simDay);
   document.getElementById('era-l').textContent=f.era;
   document.getElementById('yr-l').textContent=f.yr;
   document.getElementById('dy-l').textContent=f.dy;
-  // obs label
-  const names={noon:'Solar noon',midnight:'Solar midnight',dawn:'Dawn (+6h)',dusk:'Dusk (-6h)'};
-  const k=document.getElementById('obs-time').value;
-  document.getElementById('obs-label').textContent='Observing: '+names[k];
 }
-function syncScrub(){document.getElementById('ctrl-scrub').value=String(Math.round(simDay))}
+function syncScrub(){document.getElementById('bar-scrub').value=String(Math.round(simDay))}
 
-const playBtn=document.getElementById('play');
-function setPlay(v){playing=v;playBtn.innerHTML=v?'&#x23F8;':'&#x25B6;';playBtn.classList.toggle('on',v)}
+// Play / pause
+const playBtn=document.getElementById('bar-play');
+function setPlay(v){
+  playing=v;
+  playBtn.innerHTML=v?'&#x23F8;':'&#x25B6;';
+  playBtn.classList.toggle('on',v);
+}
 setPlay(false);
 
-document.getElementById('rew').addEventListener('click',()=>{simDay=50;setPlay(false);clearTrails();syncScrub()});
+document.getElementById('bar-rew').addEventListener('click',()=>{simDay=0;setPlay(false);clearTrails();syncScrub()});
 playBtn.addEventListener('click',()=>setPlay(!playing));
-document.getElementById('spd').addEventListener('change',function(){
+
+// Speed
+document.getElementById('bar-spd').addEventListener('change',function(){
   speed=parseFloat(this.value);
   if(speed>0&&!playing)setPlay(true);
   if(speed===0)setPlay(false);
 });
-document.getElementById('ctrl-scrub').addEventListener('input',function(){
-  simDay=parseFloat(this.value);clearTrails();setPlay(false);syncScrub();
+
+// Scrubber
+document.getElementById('bar-scrub').addEventListener('input',function(){
+  simDay=parseFloat(this.value);clearTrails();setPlay(false);
 });
-document.getElementById('ctrl-scrub').addEventListener('mousedown',()=>setPlay(false));
+document.getElementById('bar-scrub').addEventListener('mousedown',()=>setPlay(false));
+
+// Options panel toggle — positioned above the Options button
+const optsPanel=document.getElementById('opts');
+const optsBtn=document.getElementById('bar-opts');
+let optsOpen=false;
+
+function positionOpts(){
+  const rect=optsBtn.getBoundingClientRect();
+  const pw=optsPanel.offsetWidth||320;
+  let left=rect.right-pw;
+  if(left<8)left=8;
+  optsPanel.style.left=left+'px';
+  optsPanel.style.bottom=(window.innerHeight-rect.top+8)+'px';
+  optsPanel.style.top='auto';
+}
+
+optsBtn.addEventListener('click',e=>{
+  e.stopPropagation();
+  optsOpen=!optsOpen;
+  optsPanel.classList.toggle('open',optsOpen);
+  optsBtn.classList.toggle('on',optsOpen);
+  optsBtn.innerHTML=optsOpen?'Options &#x25BE;':'Options &#x25B4;';
+  if(optsOpen) positionOpts();
+});
+
+document.addEventListener('click',e=>{
+  if(optsOpen&&!optsPanel.contains(e.target)&&e.target!==optsBtn){
+    optsOpen=false;optsPanel.classList.remove('open');optsBtn.classList.remove('on');
+    optsBtn.innerHTML='Options &#x25B4;';
+  }
+});
+optsPanel.addEventListener('click',e=>e.stopPropagation());
 
 // Calendar
 document.querySelectorAll('.calb').forEach(b=>{
-  b.addEventListener('click',()=>{calMode=b.dataset.m;document.querySelectorAll('.calb').forEach(x=>x.classList.remove('on'));b.classList.add('on');updateDateDisplay()});
+  b.addEventListener('click',()=>{
+    calMode=b.dataset.m;
+    document.querySelectorAll('.calb').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');updateDate();
+  });
 });
 
-// Observation time
-document.getElementById('obs-time').addEventListener('change',function(){
+// Obs time
+document.getElementById('obs-sel').addEventListener('change',function(){
   obsTimeOffset=OBS_OFFSETS[this.value]||0;
   clearTrails();
+  const names={noon:'Solar noon',midnight:'Solar midnight',dawn:'Dawn (+6h)',dusk:'Dusk (-6h)'};
+  document.getElementById('obs-label').textContent=names[this.value];
 });
 
-// Trail toggle
+// Trails
 const trailBtn=document.getElementById('trail-btn');
 trailBtn.addEventListener('click',()=>{
   trailsOn=!trailsOn;
-  trailBtn.textContent=trailsOn?'Trails ON':'Trails OFF';
+  trailBtn.textContent=trailsOn?'Trails':'Trails Off';
   trailBtn.classList.toggle('on',trailsOn);
   if(!trailsOn)clearTrails();
 });
 
-// Labels toggle
+// Labels
 const labBtn=document.getElementById('labels-btn');
 labBtn.addEventListener('click',()=>{
   labelsOn=!labelsOn;
-  labBtn.textContent=labelsOn?'Labels ON':'Labels OFF';
+  labBtn.textContent=labelsOn?'Labels':'Labels Off';
   labBtn.classList.toggle('on',labelsOn);
 });
 
 // Epochs
 const EPOCHS=[
-  {l:'3700 CE',d:50},
-  {l:'PC 0',d:Math.max(0,Math.round((CE_COLLAPSE-START_CE)*EARTH_YR))},
-  {l:'PE 1',d:KAEL_SD},
-  {l:'Gathering',d:NOVEL_SD},
+  {l:'Diaspora',d:0},{l:'PC 0',d:146100},
+  {l:'PE 1 \u2014 Kael',d:KAEL_SD},{l:'Gathering',d:NOVEL_SD},
 ];
 const epRow=document.getElementById('ep-row');
 EPOCHS.forEach(ep=>{
   const b=document.createElement('button');b.className='ep';b.textContent=ep.l;
-  b.addEventListener('click',()=>{simDay=Math.max(0,ep.d);setPlay(false);clearTrails();syncScrub()});
+  b.addEventListener('click',()=>{
+    simDay=Math.max(0,ep.d);setPlay(false);clearTrails();syncScrub();
+    // close panel
+    optsOpen=false;optsPanel.classList.remove('open');optsBtn.classList.remove('on');
+    optsBtn.innerHTML='Options &#x25B4;';
+  });
   epRow.appendChild(b);
 });
 
-// Go-to
+// Go-to year
 function parseGoto(s){
   s=s.trim().toUpperCase().replace(/,/g,'');
   const n=parseFloat(s.replace(/^(CE|PC|PE)\s*/,''));
@@ -566,17 +644,12 @@ cv.addEventListener('mousemove',e=>{
   if(hit){
     document.getElementById('tip-n').textContent=hit.pl.name;
     const alt=(hit.pos.alt*180/Math.PI).toFixed(1),az=(hit.pos.az*180/Math.PI).toFixed(1);
-    document.getElementById('tip-i').textContent=hit.pl.desc+' · Alt '+alt+'° Az '+az+'°';
+    document.getElementById('tip-i').textContent=hit.pl.desc+' \u00b7 Alt '+alt+'\u00b0 Az '+az+'\u00b0';
     tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';
     tip.classList.add('show');
   } else tip.classList.remove('show');
 });
 cv.addEventListener('mouseleave',()=>tip.classList.remove('show'));
-
-// ── CTRL PANEL COLLAPSE ──────────────────────────────────────────────
-document.getElementById('ctrl-hdr').addEventListener('click', () => {
-  document.getElementById('ctrl').classList.toggle('collapsed');
-});
 
 // ── INIT ─────────────────────────────────────────────────────────────
 requestAnimationFrame(draw);
